@@ -1,0 +1,417 @@
+/* 
+ * 研修スケジュール管理システム - 印刷用スタイルシート
+ * 印刷時のレイアウトと最適化
+ */
+
+/* ===========================
+   印刷時の基本設定
+   =========================== */
+@media print {
+    /* 全体のリセット */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        font-size: 11pt;
+        line-height: 1.4;
+    }
+    
+    /* ===========================
+       非表示要素
+       =========================== */
+    .main-header,
+    .main-footer,
+    .empty-state,
+    .category-legend,
+    .modal,
+    .btn,
+    .session-actions,
+    .session-action-btn,
+    #backToTop {
+        display: none !important;
+    }
+    
+    /* ===========================
+       ページ設定
+       =========================== */
+    @page {
+        margin: 10mm;
+    }
+    
+    /* 1-3日間：A4縦 */
+    @page :first {
+        size: A4 portrait;
+    }
+    
+    /* ===========================
+       印刷用ヘッダー
+       =========================== */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #333;
+    }
+    
+    .print-header h1 {
+        font-size: 18pt;
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+    
+    .print-header .print-info {
+        font-size: 10pt;
+        color: #666;
+    }
+    
+    .print-header .print-period {
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 5px 0;
+    }
+    
+    /* ===========================
+       キャンプ情報バー（印刷時）
+       =========================== */
+    .camp-info-bar {
+        display: block !important;
+        background-color: #f0f0f0 !important;
+        color: #333 !important;
+        padding: 10px !important;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+    }
+    
+    .camp-info-container {
+        display: block;
+        text-align: center;
+    }
+    
+    .camp-title {
+        font-size: 14pt;
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .camp-period,
+    .camp-duration {
+        font-size: 10pt;
+        display: inline-block;
+        margin: 0 10px;
+    }
+    
+    /* ===========================
+       スケジュールコンテナ
+       =========================== */
+    .main-content {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .schedule-container {
+        box-shadow: none !important;
+        border: 1px solid #333;
+        margin: 0;
+        page-break-inside: avoid;
+    }
+    
+    .schedule-wrapper {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    
+    /* ===========================
+       スケジュールテーブル
+       =========================== */
+    .schedule-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+        page-break-inside: avoid;
+    }
+    
+    .schedule-table th,
+    .schedule-table td {
+        border: 1px solid #333 !important;
+        padding: 4px !important;
+    }
+    
+    .schedule-table thead {
+        position: static !important;
+    }
+    
+    .schedule-table thead th {
+        background-color: #e0e0e0 !important;
+        font-weight: bold;
+        text-align: center;
+        font-size: 10pt;
+    }
+    
+    /* 時間列 */
+    .time-header,
+    .time-cell {
+        position: static !important;
+        background-color: #f0f0f0 !important;
+        font-weight: bold;
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+    
+    /* 日付ヘッダー */
+    .date-header {
+        min-width: auto !important;
+    }
+    
+    .date-header .date {
+        font-size: 11pt;
+    }
+    
+    .date-header .weekday {
+        font-size: 9pt;
+    }
+    
+    /* ===========================
+       セッション
+       =========================== */
+    .session {
+        position: relative !important;
+        padding: 3px !important;
+        margin: 1px !important;
+        border-radius: 2px !important;
+        page-break-inside: avoid;
+    }
+    
+    .session-title {
+        font-size: 9pt !important;
+        font-weight: bold;
+        margin-bottom: 2px !important;
+    }
+    
+    .session-details {
+        font-size: 8pt !important;
+        display: block !important;
+    }
+    
+    .session-instructor {
+        display: inline-block;
+    }
+    
+    .session-time {
+        display: none !important;
+    }
+    
+    /* カテゴリ別色（印刷時は薄い色に） */
+    .session[data-category="sales"] {
+        background-color: #d4e6f1 !important;
+        color: #1a5490 !important;
+    }
+    
+    .session[data-category="service"] {
+        background-color: #d4efdf !important;
+        color: #186a3b !important;
+    }
+    
+    .session[data-category="gespro"] {
+        background-color: #fadbd8 !important;
+        color: #922b21 !important;
+    }
+    
+    .session[data-category="opemane"] {
+        background-color: #e8daef !important;
+        color: #512e5f !important;
+    }
+    
+    .session[data-category="other"] {
+        background-color: #fdebd0 !important;
+        color: #7e5109 !important;
+    }
+    
+    /* セッションタイプ */
+    .session[data-type="break"] {
+        background-color: #e8e8e8 !important;
+        color: #333 !important;
+    }
+    
+    .session[data-type="meal"] {
+        background-color: #ffe5cc !important;
+        color: #663300 !important;
+    }
+    
+    .session[data-type="interview"] {
+        background-color: #f0e6ff !important;
+        color: #4d0099 !important;
+    }
+    
+    /* ===========================
+       カテゴリ凡例（印刷時）
+       =========================== */
+    .print-legend {
+        display: block !important;
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #333;
+        page-break-inside: avoid;
+    }
+    
+    .print-legend h3 {
+        font-size: 10pt;
+        margin-bottom: 10px;
+    }
+    
+    .print-legend-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .print-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 9pt;
+    }
+    
+    .print-legend-color {
+        width: 20px;
+        height: 15px;
+        border: 1px solid #333;
+    }
+    
+    /* ===========================
+       ページブレーク制御
+       =========================== */
+    .page-break {
+        page-break-after: always;
+    }
+    
+    .no-break {
+        page-break-inside: avoid;
+    }
+    
+    /* 時間行のグループ化（3時間ごと） */
+    tr:nth-child(12n+1) {
+        page-break-before: auto;
+    }
+    
+    /* ===========================
+       用紙サイズ別の調整
+       =========================== */
+    /* 4-7日間：A4横 */
+    @media (min-width: 4) {
+        @page {
+            size: A4 landscape;
+        }
+        
+        .schedule-table {
+            font-size: 8pt;
+        }
+        
+        .date-header {
+            min-width: 100px !important;
+        }
+    }
+    
+    /* 8-10日間：A3横 */
+    @media (min-width: 8) {
+        @page {
+            size: A3 landscape;
+        }
+        
+        .schedule-table {
+            font-size: 10pt;
+        }
+        
+        .date-header {
+            min-width: 120px !important;
+        }
+    }
+    
+    /* ===========================
+       印刷用フッター
+       =========================== */
+    .print-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 8pt;
+        color: #666;
+        padding: 5px;
+        border-top: 1px solid #ccc;
+    }
+    
+    .print-footer::after {
+        content: "研修スケジュール管理システム - " attr(data-date) " 印刷";
+    }
+    
+    /* ===========================
+       デバッグ用（印刷プレビュー）
+       =========================== */
+    .print-preview-only {
+        display: block !important;
+        background-color: #fffbcc;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 2px dashed #ff9900;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .print-preview-only::before {
+        content: "📌 印刷プレビューモード - この枠は印刷されません";
+    }
+}
+
+/* ===========================
+   印刷ボタンクリック時の準備
+   =========================== */
+body.printing {
+    overflow: hidden;
+}
+
+body.printing .main-header,
+body.printing .main-footer,
+body.printing .category-legend {
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+}
+
+/* ===========================
+   印刷用ヘルパークラス
+   =========================== */
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-page-break-before {
+        page-break-before: always;
+    }
+    
+    .print-page-break-after {
+        page-break-after: always;
+    }
+    
+    .print-avoid-break {
+        page-break-inside: avoid;
+    }
+}

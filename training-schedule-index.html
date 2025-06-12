@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研修スケジュール管理システム</title>
+    
+    <!-- CSS ファイル -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/schedule.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/print.css" media="print">
+    
+    <!-- フォント -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <div class="header-container">
+            <h1 class="app-title">研修スケジュール管理システム</h1>
+            <div class="header-controls">
+                <button id="campSettingBtn" class="btn btn-primary">
+                    <span class="icon">📅</span> キャンプ期間設定
+                </button>
+                <button id="addSessionBtn" class="btn btn-secondary">
+                    <span class="icon">➕</span> セッション追加
+                </button>
+                <button id="categorySettingBtn" class="btn btn-secondary">
+                    <span class="icon">🎨</span> カテゴリ設定
+                </button>
+                <button id="saveBtn" class="btn btn-success">
+                    <span class="icon">💾</span> 保存
+                </button>
+                <button id="exportBtn" class="btn btn-info">
+                    <span class="icon">📥</span> エクスポート
+                </button>
+                <button id="printBtn" class="btn btn-info">
+                    <span class="icon">🖨️</span> 印刷
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- キャンプ情報表示エリア -->
+    <div class="camp-info-bar" id="campInfoBar" style="display: none;">
+        <div class="camp-info-container">
+            <span class="camp-title" id="campTitle">新入社員研修</span>
+            <span class="camp-period" id="campPeriod">2024年4月8日(月) 〜 4月12日(金)</span>
+            <span class="camp-duration" id="campDuration">5日間</span>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+        <!-- スケジュール表示エリア -->
+        <div class="schedule-container" id="scheduleContainer">
+            <div class="schedule-wrapper">
+                <table class="schedule-table" id="scheduleTable">
+                    <thead>
+                        <tr id="scheduleHeader">
+                            <th class="time-header">時間</th>
+                            <!-- 動的に日付列が追加される -->
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        <!-- 動的に時間行が追加される -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 初期表示メッセージ -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-state-content">
+                <h2>👋 ようこそ！</h2>
+                <p>研修スケジュールを作成するには、まず「キャンプ期間設定」から始めてください。</p>
+                <button class="btn btn-primary btn-large" onclick="document.getElementById('campSettingBtn').click()">
+                    <span class="icon">📅</span> キャンプ期間を設定する
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- カテゴリ凡例 -->
+    <div class="category-legend" id="categoryLegend" style="display: none;">
+        <h3>カテゴリ凡例</h3>
+        <div class="legend-items">
+            <div class="legend-item" data-category="sales">
+                <span class="legend-color"></span>
+                <span class="legend-label">セールス</span>
+            </div>
+            <div class="legend-item" data-category="service">
+                <span class="legend-color"></span>
+                <span class="legend-label">サービス</span>
+            </div>
+            <div class="legend-item" data-category="gespro">
+                <span class="legend-color"></span>
+                <span class="legend-label">ゲスプロ</span>
+            </div>
+            <div class="legend-item" data-category="opemane">
+                <span class="legend-color"></span>
+                <span class="legend-label">オペマネ</span>
+            </div>
+            <div class="legend-item" data-category="other">
+                <span class="legend-color"></span>
+                <span class="legend-label">その他</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- キャンプ期間設定モーダル -->
+    <div class="modal" id="campSettingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>キャンプ期間設定</h2>
+                <button class="modal-close" onclick="closeModal('campSettingModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="campSettingForm">
+                    <div class="form-group">
+                        <label for="campName">研修名称</label>
+                        <input type="text" id="campName" name="campName" class="form-control" 
+                               placeholder="例：新入社員研修" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">開始日</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">期間（日数）</label>
+                        <select id="duration" name="duration" class="form-control" required>
+                            <option value="">選択してください</option>
+                            <option value="1">1日間</option>
+                            <option value="2">2日間</option>
+                            <option value="3">3日間</option>
+                            <option value="4">4日間</option>
+                            <option value="5">5日間</option>
+                            <option value="6">6日間</option>
+                            <option value="7">7日間（1週間）</option>
+                            <option value="8">8日間</option>
+                            <option value="9">9日間</option>
+                            <option value="10">10日間</option>
+                        </select>
+                    </div>
+                    <div class="form-note">
+                        ※ 日曜日は自動的に研修なし日として設定されます
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('campSettingModal')">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="saveCampSettings()">設定を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- セッション編集モーダル -->
+    <div class="modal" id="sessionEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="sessionModalTitle">セッション編集</h2>
+                <button class="modal-close" onclick="closeModal('sessionEditModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="sessionEditForm">
+                    <div class="form-row">
+                        <div class="form-group form-col-half">
+                            <label for="sessionDate">日付</label>
+                            <input type="date" id="sessionDate" name="sessionDate" class="form-control" readonly>
+                        </div>
+                        <div class="form-group form-col-half">
+                            <label for="sessionType">種別</label>
+                            <select id="sessionType" name="sessionType" class="form-control" required>
+                                <option value="lecture">講義</option>
+                                <option value="practice">実践</option>
+                                <option value="break">休憩</option>
+                                <option value="meal">食事</option>
+                                <option value="interview">面談</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-col-half">
+                            <label for="sessionStartTime">開始時間</label>
+                            <select id="sessionStartTime" name="sessionStartTime" class="form-control" required>
+                                <!-- 時間オプションは動的に生成 -->
+                            </select>
+                        </div>
+                        <div class="form-group form-col-half">
+                            <label for="sessionDuration">時間（分）</label>
+                            <select id="sessionDuration" name="sessionDuration" class="form-control" required>
+                                <option value="15">15分</option>
+                                <option value="30">30分</option>
+                                <option value="45">45分</option>
+                                <option value="50">50分</option>
+                                <option value="60">60分</option>
+                                <option value="90">90分</option>
+                                <option value="120">120分</option>
+                                <option value="150">150分</option>
+                                <option value="180">180分</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionTitle">タイトル</label>
+                        <input type="text" id="sessionTitle" name="sessionTitle" class="form-control" 
+                               placeholder="例：営業基礎研修" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-col-half">
+                            <label for="sessionCategory">カテゴリ</label>
+                            <select id="sessionCategory" name="sessionCategory" class="form-control">
+                                <option value="">選択してください</option>
+                                <option value="sales">セールス</option>
+                                <option value="service">サービス</option>
+                                <option value="gespro">ゲスプロ</option>
+                                <option value="opemane">オペマネ</option>
+                                <option value="other">その他</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-col-half">
+                            <label for="sessionInstructor">講師</label>
+                            <input type="text" id="sessionInstructor" name="sessionInstructor" 
+                                   class="form-control" placeholder="例：千葉" list="instructorList">
+                            <datalist id="instructorList">
+                                <!-- 講師リストは動的に生成 -->
+                            </datalist>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sessionNotes">備考</label>
+                        <textarea id="sessionNotes" name="sessionNotes" class="form-control" 
+                                  rows="3" placeholder="メモや注意事項があれば入力"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteSessionBtn" onclick="deleteSession()" style="display: none;">削除</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('sessionEditModal')">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="saveSession()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- カテゴリ設定モーダル -->
+    <div class="modal" id="categorySettingModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h2>カテゴリ設定</h2>
+                <button class="modal-close" onclick="closeModal('categorySettingModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="category-settings">
+                    <div class="category-item">
+                        <label>セールス</label>
+                        <input type="color" id="colorSales" value="#3498db">
+                        <span class="color-preview" style="background-color: #3498db;"></span>
+                    </div>
+                    <div class="category-item">
+                        <label>サービス</label>
+                        <input type="color" id="colorService" value="#2ecc71">
+                        <span class="color-preview" style="background-color: #2ecc71;"></span>
+                    </div>
+                    <div class="category-item">
+                        <label>ゲスプロ</label>
+                        <input type="color" id="colorGespro" value="#e74c3c">
+                        <span class="color-preview" style="background-color: #e74c3c;"></span>
+                    </div>
+                    <div class="category-item">
+                        <label>オペマネ</label>
+                        <input type="color" id="colorOpemane" value="#9b59b6">
+                        <span class="color-preview" style="background-color: #9b59b6;"></span>
+                    </div>
+                    <div class="category-item">
+                        <label>その他</label>
+                        <input type="color" id="colorOther" value="#f39c12">
+                        <span class="color-preview" style="background-color: #f39c12;"></span>
+                    </div>
+                </div>
+                <div class="preset-themes">
+                    <h3>プリセットテーマ</h3>
+                    <button class="btn btn-small" onclick="applyTheme('default')">デフォルト</button>
+                    <button class="btn btn-small" onclick="applyTheme('pastel')">パステル</button>
+                    <button class="btn btn-small" onclick="applyTheme('vivid')">ビビッド</button>
+                    <button class="btn btn-small" onclick="applyTheme('monochrome')">モノクロ</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('categorySettingModal')">キャンセル</button>
+                <button type="button" class="btn btn-primary" onclick="saveCategorySettings()">設定を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <p>&copy; 2024 研修スケジュール管理システム</p>
+    </footer>
+
+    <!-- JavaScript ファイル -->
+    <script src="js/app.js"></script>
+    <script src="js/schedule.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/export.js"></script>
+    
+    <!-- 簡易的なモーダル制御（後でJSファイルに移動） -->
+    <script>
+        // モーダルを閉じる関数
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // モーダルを開く関数
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        // 仮の関数（後でJSファイルで実装）
+        function saveCampSettings() {
+            console.log('キャンプ期間設定を保存');
+            closeModal('campSettingModal');
+        }
+        
+        function saveSession() {
+            console.log('セッションを保存');
+            closeModal('sessionEditModal');
+        }
+        
+        function deleteSession() {
+            if (confirm('このセッションを削除してもよろしいですか？')) {
+                console.log('セッションを削除');
+                closeModal('sessionEditModal');
+            }
+        }
+        
+        function saveCategorySettings() {
+            console.log('カテゴリ設定を保存');
+            closeModal('categorySettingModal');
+        }
+        
+        function applyTheme(themeName) {
+            console.log('テーマを適用:', themeName);
+        }
+        
+        // 初期イベントリスナー設定
+        document.addEventListener('DOMContentLoaded', function() {
+            // ボタンクリックイベント
+            document.getElementById('campSettingBtn').addEventListener('click', function() {
+                openModal('campSettingModal');
+            });
+            
+            document.getElementById('categorySettingBtn').addEventListener('click', function() {
+                openModal('categorySettingModal');
+            });
+            
+            // モーダルの外側クリックで閉じる
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

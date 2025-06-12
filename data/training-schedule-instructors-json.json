@@ -1,0 +1,319 @@
+{
+  "version": "1.0",
+  "instructors": [
+    {
+      "id": 1,
+      "name": "千葉",
+      "email": "chiba@example.com",
+      "phone": "03-1234-5678",
+      "department": "人事部",
+      "specialties": ["other", "service"],
+      "role": "研修マネージャー",
+      "experience": "10年",
+      "certifications": [
+        "キャリアコンサルタント",
+        "産業カウンセラー"
+      ],
+      "bio": "新入社員研修の企画・運営を担当。キャリア開発支援が専門。",
+      "availability": {
+        "monday": true,
+        "tuesday": true,
+        "wednesday": true,
+        "thursday": true,
+        "friday": true,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 6,
+      "preferredSessionTypes": ["lecture", "interview"]
+    },
+    {
+      "id": 2,
+      "name": "栗田",
+      "email": "kurita@example.com",
+      "phone": "03-1234-5679",
+      "department": "営業部",
+      "specialties": ["sales"],
+      "role": "営業部長",
+      "experience": "15年",
+      "certifications": [
+        "セールスマスター認定",
+        "プレゼンテーション検定1級"
+      ],
+      "bio": "トップセールスとして活躍後、営業教育を担当。実践的な営業スキルの指導が得意。",
+      "availability": {
+        "monday": true,
+        "tuesday": true,
+        "wednesday": false,
+        "thursday": true,
+        "friday": true,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 4,
+      "preferredSessionTypes": ["lecture", "practice"]
+    },
+    {
+      "id": 3,
+      "name": "山田",
+      "email": "yamada@example.com",
+      "phone": "03-1234-5680",
+      "department": "カスタマーサービス部",
+      "specialties": ["service"],
+      "role": "CS部門マネージャー",
+      "experience": "12年",
+      "certifications": [
+        "サービス接遇検定1級",
+        "ビジネスマナー講師認定"
+      ],
+      "bio": "顧客満足度向上のスペシャリスト。接客・接遇のプロフェッショナル。",
+      "availability": {
+        "monday": true,
+        "tuesday": true,
+        "wednesday": true,
+        "thursday": true,
+        "friday": true,
+        "saturday": true,
+        "sunday": false
+      },
+      "maxHoursPerDay": 8,
+      "preferredSessionTypes": ["lecture", "practice"]
+    },
+    {
+      "id": 4,
+      "name": "佐藤",
+      "email": "sato@example.com",
+      "phone": "03-1234-5681",
+      "department": "マーケティング部",
+      "specialties": ["gespro"],
+      "role": "マーケティングディレクター",
+      "experience": "8年",
+      "certifications": [
+        "Webマーケティング検定",
+        "Google Analytics認定資格",
+        "データ分析スペシャリスト"
+      ],
+      "bio": "デジタルマーケティングのエキスパート。データドリブンな戦略立案を指導。",
+      "availability": {
+        "monday": false,
+        "tuesday": true,
+        "wednesday": true,
+        "thursday": true,
+        "friday": false,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 6,
+      "preferredSessionTypes": ["lecture", "practice"]
+    },
+    {
+      "id": 5,
+      "name": "鈴木",
+      "email": "suzuki@example.com",
+      "phone": "03-1234-5682",
+      "department": "経営企画部",
+      "specialties": ["opemane"],
+      "role": "プロジェクトマネージャー",
+      "experience": "13年",
+      "certifications": [
+        "PMP（プロジェクトマネジメント）",
+        "スクラムマスター認定",
+        "ITILファンデーション"
+      ],
+      "bio": "大規模プロジェクトの管理経験豊富。アジャイル開発の導入支援も実施。",
+      "availability": {
+        "monday": true,
+        "tuesday": false,
+        "wednesday": true,
+        "thursday": true,
+        "friday": true,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 6,
+      "preferredSessionTypes": ["lecture", "practice"]
+    },
+    {
+      "id": 6,
+      "name": "高橋",
+      "email": "takahashi@example.com",
+      "phone": "03-1234-5683",
+      "department": "IT部門",
+      "specialties": ["other", "opemane"],
+      "role": "システムエンジニア",
+      "experience": "7年",
+      "certifications": [
+        "基本情報技術者",
+        "応用情報技術者",
+        "セキュリティスペシャリスト"
+      ],
+      "bio": "社内システムの開発・運用を担当。IT基礎教育の講師も務める。",
+      "availability": {
+        "monday": true,
+        "tuesday": true,
+        "wednesday": true,
+        "thursday": false,
+        "friday": true,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 4,
+      "preferredSessionTypes": ["lecture"]
+    },
+    {
+      "id": 7,
+      "name": "渡辺",
+      "email": "watanabe@example.com",
+      "phone": "03-1234-5684",
+      "department": "財務部",
+      "specialties": ["other"],
+      "role": "財務アナリスト",
+      "experience": "5年",
+      "certifications": [
+        "日商簿記1級",
+        "ファイナンシャルプランナー2級"
+      ],
+      "bio": "財務分析と予算管理の専門家。ビジネス数字の読み方を分かりやすく指導。",
+      "availability": {
+        "monday": false,
+        "tuesday": false,
+        "wednesday": true,
+        "thursday": true,
+        "friday": false,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 3,
+      "preferredSessionTypes": ["lecture"]
+    },
+    {
+      "id": 8,
+      "name": "伊藤",
+      "email": "ito@example.com",
+      "phone": "03-1234-5685",
+      "department": "法務部",
+      "specialties": ["other"],
+      "role": "法務担当",
+      "experience": "6年",
+      "certifications": [
+        "ビジネス実務法務検定1級",
+        "個人情報保護士"
+      ],
+      "bio": "コンプライアンスと契約法務の専門家。ビジネス法務の基礎を指導。",
+      "availability": {
+        "monday": true,
+        "tuesday": false,
+        "wednesday": false,
+        "thursday": true,
+        "friday": true,
+        "saturday": false,
+        "sunday": false
+      },
+      "maxHoursPerDay": 3,
+      "preferredSessionTypes": ["lecture"]
+    }
+  ],
+  "departments": [
+    {
+      "id": "hr",
+      "name": "人事部",
+      "contactPerson": "千葉",
+      "extension": "1001"
+    },
+    {
+      "id": "sales",
+      "name": "営業部",
+      "contactPerson": "栗田",
+      "extension": "2001"
+    },
+    {
+      "id": "cs",
+      "name": "カスタマーサービス部",
+      "contactPerson": "山田",
+      "extension": "3001"
+    },
+    {
+      "id": "marketing",
+      "name": "マーケティング部",
+      "contactPerson": "佐藤",
+      "extension": "4001"
+    },
+    {
+      "id": "planning",
+      "name": "経営企画部",
+      "contactPerson": "鈴木",
+      "extension": "5001"
+    },
+    {
+      "id": "it",
+      "name": "IT部門",
+      "contactPerson": "高橋",
+      "extension": "6001"
+    },
+    {
+      "id": "finance",
+      "name": "財務部",
+      "contactPerson": "渡辺",
+      "extension": "7001"
+    },
+    {
+      "id": "legal",
+      "name": "法務部",
+      "contactPerson": "伊藤",
+      "extension": "8001"
+    }
+  ],
+  "skillCategories": {
+    "sales": {
+      "name": "セールス",
+      "skills": [
+        "営業基礎",
+        "プレゼンテーション",
+        "交渉術",
+        "顧客関係構築",
+        "ソリューション営業"
+      ]
+    },
+    "service": {
+      "name": "サービス",
+      "skills": [
+        "ビジネスマナー",
+        "電話応対",
+        "クレーム対応",
+        "ホスピタリティ",
+        "コミュニケーション"
+      ]
+    },
+    "gespro": {
+      "name": "ゲスプロ",
+      "skills": [
+        "マーケティング基礎",
+        "市場分析",
+        "デジタルマーケティング",
+        "データ分析",
+        "ブランディング"
+      ]
+    },
+    "opemane": {
+      "name": "オペマネ",
+      "skills": [
+        "プロジェクト管理",
+        "業務改善",
+        "リスクマネジメント",
+        "チームビルディング",
+        "KPI管理"
+      ]
+    },
+    "other": {
+      "name": "その他",
+      "skills": [
+        "IT基礎",
+        "財務基礎",
+        "法務・コンプライアンス",
+        "キャリアプランニング",
+        "メンタルヘルス"
+      ]
+    }
+  },
+  "lastUpdated": "2024-03-15T10:30:00.000Z"
+}

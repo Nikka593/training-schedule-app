@@ -1,0 +1,388 @@
+{
+  "version": "1.0",
+  "campInfo": {
+    "name": "新入社員研修2024",
+    "startDate": "2024-04-08",
+    "duration": 5,
+    "actualDays": [
+      "2024-04-08",
+      "2024-04-09",
+      "2024-04-10",
+      "2024-04-11",
+      "2024-04-12"
+    ]
+  },
+  "sessions": {
+    "2024-04-08": [
+      {
+        "id": "session-001",
+        "title": "オリエンテーション",
+        "type": "lecture",
+        "category": "other",
+        "startTime": "09:00",
+        "duration": 90,
+        "instructor": "千葉",
+        "notes": "会社概要、研修の流れ、注意事項など"
+      },
+      {
+        "id": "session-002",
+        "title": "昼食",
+        "type": "meal",
+        "category": "",
+        "startTime": "12:00",
+        "duration": 60,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-003",
+        "title": "ビジネスマナー基礎",
+        "type": "lecture",
+        "category": "service",
+        "startTime": "13:00",
+        "duration": 120,
+        "instructor": "山田",
+        "notes": "挨拶、電話対応、名刺交換"
+      },
+      {
+        "id": "session-004",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "15:00",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-005",
+        "title": "コミュニケーション研修",
+        "type": "practice",
+        "category": "service",
+        "startTime": "15:15",
+        "duration": 90,
+        "instructor": "山田",
+        "notes": "ロールプレイング形式"
+      }
+    ],
+    "2024-04-09": [
+      {
+        "id": "session-006",
+        "title": "営業基礎知識",
+        "type": "lecture",
+        "category": "sales",
+        "startTime": "09:00",
+        "duration": 90,
+        "instructor": "栗田",
+        "notes": "営業プロセス、顧客心理"
+      },
+      {
+        "id": "session-007",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "10:30",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-008",
+        "title": "プレゼンテーション技法",
+        "type": "lecture",
+        "category": "sales",
+        "startTime": "10:45",
+        "duration": 75,
+        "instructor": "栗田",
+        "notes": "効果的な資料作成と話し方"
+      },
+      {
+        "id": "session-009",
+        "title": "昼食",
+        "type": "meal",
+        "category": "",
+        "startTime": "12:00",
+        "duration": 60,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-010",
+        "title": "営業ロールプレイング",
+        "type": "practice",
+        "category": "sales",
+        "startTime": "13:00",
+        "duration": 180,
+        "instructor": "栗田",
+        "notes": "実践的な営業シミュレーション"
+      },
+      {
+        "id": "session-011",
+        "title": "個別面談",
+        "type": "interview",
+        "category": "",
+        "startTime": "16:00",
+        "duration": 120,
+        "instructor": "千葉",
+        "notes": "1人30分×4名"
+      }
+    ],
+    "2024-04-10": [
+      {
+        "id": "session-012",
+        "title": "マーケティング基礎",
+        "type": "lecture",
+        "category": "gespro",
+        "startTime": "09:00",
+        "duration": 90,
+        "instructor": "佐藤",
+        "notes": "市場分析、ターゲティング"
+      },
+      {
+        "id": "session-013",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "10:30",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-014",
+        "title": "デジタルマーケティング",
+        "type": "lecture",
+        "category": "gespro",
+        "startTime": "10:45",
+        "duration": 75,
+        "instructor": "佐藤",
+        "notes": "SNS活用、Web広告の基本"
+      },
+      {
+        "id": "session-015",
+        "title": "昼食",
+        "type": "meal",
+        "category": "",
+        "startTime": "12:00",
+        "duration": 60,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-016",
+        "title": "顧客データ分析演習",
+        "type": "practice",
+        "category": "gespro",
+        "startTime": "13:00",
+        "duration": 120,
+        "instructor": "佐藤",
+        "notes": "Excel/BIツールを使用"
+      },
+      {
+        "id": "session-017",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "15:00",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-018",
+        "title": "プロジェクト管理入門",
+        "type": "lecture",
+        "category": "opemane",
+        "startTime": "15:15",
+        "duration": 90,
+        "instructor": "鈴木",
+        "notes": "アジャイル、ウォーターフォール"
+      }
+    ],
+    "2024-04-11": [
+      {
+        "id": "session-019",
+        "title": "業務プロセス改善",
+        "type": "lecture",
+        "category": "opemane",
+        "startTime": "09:00",
+        "duration": 90,
+        "instructor": "鈴木",
+        "notes": "PDCA、KPI設定"
+      },
+      {
+        "id": "session-020",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "10:30",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-021",
+        "title": "リスクマネジメント",
+        "type": "lecture",
+        "category": "opemane",
+        "startTime": "10:45",
+        "duration": 75,
+        "instructor": "鈴木",
+        "notes": "リスク評価と対策立案"
+      },
+      {
+        "id": "session-022",
+        "title": "昼食",
+        "type": "meal",
+        "category": "",
+        "startTime": "12:00",
+        "duration": 60,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-023",
+        "title": "チームビルディング演習",
+        "type": "practice",
+        "category": "opemane",
+        "startTime": "13:00",
+        "duration": 150,
+        "instructor": "鈴木",
+        "notes": "グループワーク、問題解決演習"
+      },
+      {
+        "id": "session-024",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "15:30",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-025",
+        "title": "キャリアプランニング",
+        "type": "lecture",
+        "category": "other",
+        "startTime": "15:45",
+        "duration": 90,
+        "instructor": "千葉",
+        "notes": "目標設定、スキルマップ作成"
+      }
+    ],
+    "2024-04-12": [
+      {
+        "id": "session-026",
+        "title": "総合演習準備",
+        "type": "practice",
+        "category": "other",
+        "startTime": "09:00",
+        "duration": 90,
+        "instructor": "全講師",
+        "notes": "グループごとに発表準備"
+      },
+      {
+        "id": "session-027",
+        "title": "休憩",
+        "type": "break",
+        "category": "",
+        "startTime": "10:30",
+        "duration": 15,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-028",
+        "title": "総合演習発表",
+        "type": "practice",
+        "category": "other",
+        "startTime": "10:45",
+        "duration": 75,
+        "instructor": "全講師",
+        "notes": "各グループ15分発表"
+      },
+      {
+        "id": "session-029",
+        "title": "昼食",
+        "type": "meal",
+        "category": "",
+        "startTime": "12:00",
+        "duration": 60,
+        "instructor": "",
+        "notes": ""
+      },
+      {
+        "id": "session-030",
+        "title": "フィードバック・講評",
+        "type": "lecture",
+        "category": "other",
+        "startTime": "13:00",
+        "duration": 60,
+        "instructor": "千葉",
+        "notes": "講師からの総評"
+      },
+      {
+        "id": "session-031",
+        "title": "修了式",
+        "type": "lecture",
+        "category": "other",
+        "startTime": "14:00",
+        "duration": 60,
+        "instructor": "千葉",
+        "notes": "修了証授与、今後の説明"
+      },
+      {
+        "id": "session-032",
+        "title": "懇親会準備",
+        "type": "break",
+        "category": "",
+        "startTime": "15:00",
+        "duration": 30,
+        "instructor": "",
+        "notes": "会場セッティング"
+      },
+      {
+        "id": "session-033",
+        "title": "懇親会",
+        "type": "meal",
+        "category": "",
+        "startTime": "15:30",
+        "duration": 90,
+        "instructor": "",
+        "notes": "研修の振り返り、交流"
+      }
+    ]
+  },
+  "categories": {
+    "sales": {
+      "name": "セールス",
+      "color": "#3498db"
+    },
+    "service": {
+      "name": "サービス",
+      "color": "#2ecc71"
+    },
+    "gespro": {
+      "name": "ゲスプロ",
+      "color": "#e74c3c"
+    },
+    "opemane": {
+      "name": "オペマネ",
+      "color": "#9b59b6"
+    },
+    "other": {
+      "name": "その他",
+      "color": "#f39c12"
+    }
+  },
+  "instructors": [
+    "千葉",
+    "栗田",
+    "山田",
+    "佐藤",
+    "鈴木",
+    "全講師"
+  ],
+  "savedAt": "2024-03-15T10:30:00.000Z"
+}
