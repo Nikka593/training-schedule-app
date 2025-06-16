@@ -433,11 +433,227 @@ function deleteSelectedSessions() {
     }
 }
 
-// イベントリスナーの追加
+/**
+ * 講師管理モーダルを開く
+ */
+function openInstructorManagementModal() {
+    // モーダルが存在しない場合は作成
+    if (!document.getElementById('instructorManagementModal')) {
+        createInstructorManagementModal();
+    }
+    
+    // 講師リストを更新
+    updateInstructorManagementList();
+    
+    openModal('instructorManagementModal');
+}
+
+/**
+ * 講師管理モーダルの作成
+ */
+function createInstructorManagementModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'instructorManagementModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>講師管理</h2>
+                <button class="modal-close" onclick="closeModal('instructorManagementModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>新しい講師を追加</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="newInstructorName" class="form-control" 
+                               placeholder="講師名を入力" style="flex: 1;">
+                        <button type="button" class="btn btn-primary" onclick="addNewInstructor()">追加</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>登録済み講師一覧</label>
+                    <div id="instructorList" class="instructor-list">
+                        <!-- 講師リストが動的に挿入される -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('instructorManagementModal')">閉じる</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // モーダルの外側クリックで閉じる
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal('instructorManagementModal');
+        }
+    });
+    
+    // スタイルを追加
+    const style = document.createElement('style');
+    style.textContent = `
+        .instructor-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem;
+        }
+        
+        .instructor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .instructor-item:last-child {
+            border-bottom: none;
+        }
+        
+        .instructor-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .instructor-name {
+            font-weight: 500;
+        }
+        
+        .instructor-stats {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-left: 1rem;
+        }
+        
+        .delete-instructor-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+        
+        .delete-instructor-btn:hover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+/**
+ * 講師管理リストの更新
+ */
+function updateInstructorManagementList() {
+    const listContainer = document.getElementById('instructorList');
+    if (!listContainer) return;
+    
+    // 各講師の使用回数を計算
+    const instructorStats = {};
+    Object.values(AppState.sessions).forEach(sessions => {
+        sessions.forEach(session => {
+            if (session.instructor) {
+                instructorStats[session.instructor] = (instructorStats[session.instructor] || 0) + 1;
+            }
+        });
+    });
+    
+    // 講師リストをソート
+    const sortedInstructors = [...new Set(AppState.instructors)].sort();
+    
+    // リストをレンダリング
+    listContainer.innerHTML = sortedInstructors.map(name => {
+        const count = instructorStats[name] || 0;
+        const canDelete = count === 0;
+        
+        return `
+            <div class="instructor-item">
+                <div>
+                    <span class="instructor-name">${escapeHtml(name)}</span>
+                    <span class="instructor-stats">${count}件のセッション</span>
+                </div>
+                <button class="delete-instructor-btn" 
+                        onclick="deleteInstructor('${escapeHtml(name)}')"
+                        ${!canDelete ? 'disabled title="使用中のため削除できません"' : ''}>
+                    削除
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    if (sortedInstructors.length === 0) {
+        listContainer.innerHTML = '<p class="text-muted">講師が登録されていません</p>';
+    }
+}
+
+/**
+ * 新しい講師を追加
+ */
+function addNewInstructor() {
+    const input = document.getElementById('newInstructorName');
+    const name = input.value.trim();
+    
+    if (!name) {
+        showToast('講師名を入力してください', 'warning');
+        return;
+    }
+    
+    if (addInstructor(name)) {
+        showToast(`講師「${name}」を追加しました`, 'success');
+        input.value = '';
+        updateInstructorManagementList();
+        updateInstructorDatalist();
+    } else {
+        showToast('この講師は既に登録されています', 'warning');
+    }
+}
+
+/**
+ * 講師を削除
+ */
+function deleteInstructor(name) {
+    if (!confirm(`講師「${name}」を削除してもよろしいですか？`)) {
+        return;
+    }
+    
+    const result = removeInstructor(name);
+    
+    if (result.success) {
+        showToast(`講師「${name}」を削除しました`, 'success');
+        updateInstructorManagementList();
+        updateInstructorDatalist();
+    } else {
+        showToast(result.message || '削除に失敗しました', 'error');
+    }
+}
+
+// 既存のコードの後に追加
 document.addEventListener('DOMContentLoaded', () => {
     // セッションタイプ変更時の処理
     const sessionType = document.getElementById('sessionType');
     if (sessionType) {
         sessionType.addEventListener('change', handleSessionTypeChange);
+    }
+    
+    // 講師入力フィールドでEnterキーを押したときの処理
+    const sessionInstructor = document.getElementById('sessionInstructor');
+    if (sessionInstructor) {
+        sessionInstructor.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // 新しい講師を自動的に追加
+                const name = e.target.value.trim();
+                if (name && !AppState.instructors.includes(name)) {
+                    addInstructor(name);
+                }
+            }
+        });
     }
 });
