@@ -601,10 +601,9 @@ function saveSession() {
         AppState.sessions[date].push(newSession);
     }
     
-    // 講師リストの更新
-    if (formData.instructor && !AppState.instructors.includes(formData.instructor)) {
-        AppState.instructors.push(formData.instructor);
-        initializeInstructorList();
+    // 講師リストの更新（新しい講師を自動追加）
+    if (formData.instructor && formData.instructor.trim() !== '') {
+        addInstructor(formData.instructor);
     }
     
     // 再レンダリング
