@@ -29,6 +29,9 @@
                 <button id="categorySettingBtn" class="btn btn-secondary">
                     <span class="icon">🎨</span> カテゴリ設定
                 </button>
+                <button id="instructorManageBtn" class="btn btn-secondary">
+                    <span class="icon">👥</span> 講師管理
+                </button>
                 <button id="saveBtn" class="btn btn-success">
                     <span class="icon">💾</span> 保存
                 </button>
@@ -353,6 +356,10 @@
             
             document.getElementById('categorySettingBtn').addEventListener('click', function() {
                 openModal('categorySettingModal');
+            });
+            
+            document.getElementById('instructorManageBtn').addEventListener('click', function() {
+                openInstructorManagementModal();
             });
             
             // モーダルの外側クリックで閉じる
