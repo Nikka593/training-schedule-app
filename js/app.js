@@ -281,22 +281,110 @@ function generateTimeSlots() {
  * 講師リストの初期化
  */
 function initializeInstructorList() {
-    // デフォルトの講師リスト
-    const defaultInstructors = ['千葉', '栗田', '山田', '佐藤', '鈴木'];
+    // LocalStorageから保存された講師リストを読み込む
+    const savedInstructors = loadInstructorsFromStorage();
     
-    // 保存されている講師リストと結合
-    const savedInstructors = AppState.instructors || [];
-    const allInstructors = [...new Set([...defaultInstructors, ...savedInstructors])];
-    
-    // データリストを更新
+    // 初回起動時のみデフォルトの講師を読み込む
+    if (savedInstructors.length === 0) {
+        // デフォルトの講師リストを読み込む
+        fetch('data/instructors.json')
+            .then(response => response.json())
+            .then(data => {
+                AppState.instructors = data.instructors || ['千葉', '栗田', '山田', '佐藤', '鈴木'];
+                saveInstructorsToStorage();
+                updateInstructorDatalist();
+            })
+            .catch(error => {
+                console.error('講師リストの読み込みエラー:', error);
+                AppState.instructors = ['千葉', '栗田', '山田', '佐藤', '鈴木'];
+                updateInstructorDatalist();
+            });
+    } else {
+        AppState.instructors = savedInstructors;
+        updateInstructorDatalist();
+    }
+}
+
+/**
+ * 講師リストをLocalStorageから読み込む
+ */
+function loadInstructorsFromStorage() {
+    try {
+        const saved = localStorage.getItem('trainingScheduleInstructors');
+        return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+        console.error('講師リスト読み込みエラー:', error);
+        return [];
+    }
+}
+
+/**
+ * 講師リストをLocalStorageに保存
+ */
+function saveInstructorsToStorage() {
+    try {
+        localStorage.setItem('trainingScheduleInstructors', JSON.stringify(AppState.instructors));
+    } catch (error) {
+        console.error('講師リスト保存エラー:', error);
+    }
+}
+
+/**
+ * 講師データリストを更新
+ */
+function updateInstructorDatalist() {
     const datalist = document.getElementById('instructorList');
     if (datalist) {
-        datalist.innerHTML = allInstructors.map(name => 
+        // 重複を除去してソート
+        const uniqueInstructors = [...new Set(AppState.instructors)].sort();
+        datalist.innerHTML = uniqueInstructors.map(name => 
             `<option value="${name}">`
         ).join('');
     }
+}
+
+/**
+ * 講師を追加
+ */
+function addInstructor(name) {
+    if (!name || name.trim() === '') return false;
     
-    AppState.instructors = allInstructors;
+    const trimmedName = name.trim();
+    if (!AppState.instructors.includes(trimmedName)) {
+        AppState.instructors.push(trimmedName);
+        saveInstructorsToStorage();
+        updateInstructorDatalist();
+        return true;
+    }
+    return false;
+}
+
+/**
+ * 講師を削除
+ */
+function removeInstructor(name) {
+    const index = AppState.instructors.indexOf(name);
+    if (index > -1) {
+        // その講師が使われているセッションがあるかチェック
+        let isUsed = false;
+        Object.values(AppState.sessions).forEach(sessions => {
+            sessions.forEach(session => {
+                if (session.instructor === name) {
+                    isUsed = true;
+                }
+            });
+        });
+        
+        if (isUsed) {
+            return { success: false, message: 'この講師は既存のセッションで使用されています' };
+        }
+        
+        AppState.instructors.splice(index, 1);
+        saveInstructorsToStorage();
+        updateInstructorDatalist();
+        return { success: true };
+    }
+    return { success: false, message: '講師が見つかりません' };
 }
 
 /**
