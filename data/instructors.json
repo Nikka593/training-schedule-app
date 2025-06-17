@@ -1,27 +1,114 @@
 {
   "instructors": [
-    "千葉",
-    "栗田",
-    "中井",
-    "佐藤",
-    "町田",
-    "町田",
-    "古賀",
-    "田口",
-    "米田",
-    "後藤",
-    "田﨑",
-    "佐々木",
-    "栗原",
-    "樋口",
-    "朝見",
-    "小松",
-    "赤松",
-    "成田",
-    "今村",
-    "佐野",
-    "北林",
-    "東山崎",
-    "大川"
+    {
+      "id": 1,
+      "name": "千葉",
+      "specialties": ["other", "sales"]
+    },
+    {
+      "id": 2,
+      "name": "栗田",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 3,
+      "name": "中井",
+      "specialties": ["service"]
+    },
+    {
+      "id": 4,
+      "name": "佐藤",
+      "specialties": ["sales", "service"]
+    },
+    {
+      "id": 5,
+      "name": "町田",
+      "specialties": ["gespro"]
+    },
+    {
+      "id": 6,
+      "name": "古賀",
+      "specialties": ["opemane"]
+    },
+    {
+      "id": 7,
+      "name": "田口",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 8,
+      "name": "米田",
+      "specialties": ["service"]
+    },
+    {
+      "id": 9,
+      "name": "後藤",
+      "specialties": ["other"]
+    },
+    {
+      "id": 10,
+      "name": "田﨑",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 11,
+      "name": "佐々木",
+      "specialties": ["service"]
+    },
+    {
+      "id": 12,
+      "name": "栗原",
+      "specialties": ["gespro"]
+    },
+    {
+      "id": 13,
+      "name": "樋口",
+      "specialties": ["opemane"]
+    },
+    {
+      "id": 14,
+      "name": "朝見",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 15,
+      "name": "小松",
+      "specialties": ["service"]
+    },
+    {
+      "id": 16,
+      "name": "赤松",
+      "specialties": ["other"]
+    },
+    {
+      "id": 17,
+      "name": "成田",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 18,
+      "name": "今村",
+      "specialties": ["gespro"]
+    },
+    {
+      "id": 19,
+      "name": "佐野",
+      "specialties": ["opemane"]
+    },
+    {
+      "id": 20,
+      "name": "北林",
+      "specialties": ["service"]
+    },
+    {
+      "id": 21,
+      "name": "東山崎",
+      "specialties": ["sales"]
+    },
+    {
+      "id": 22,
+      "name": "大川",
+      "specialties": ["other"]
+    }
   ]
 }
