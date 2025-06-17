@@ -1,645 +1,497 @@
-/**
- * 研修スケジュール管理システム - メインアプリケーション
- * アプリケーション全体の初期化と制御
- */
+// 研修スケジュール管理アプリ - メインアプリケーション
 
-// グローバル状態管理
-const AppState = {
-    campInfo: {
-        name: '',
-        startDate: null,
-        duration: 0,
-        actualDays: [] // 日曜日を除いた実際の研修日
-    },
-    sessions: {}, // 日付をキーとしたセッションの配列
-    categories: {
-        sales: { name: 'セールス', color: '#3498db' },
-        service: { name: 'サービス', color: '#2ecc71' },
-        gespro: { name: 'ゲスプロ', color: '#e74c3c' },
-        opemane: { name: 'オペマネ', color: '#9b59b6' },
-        other: { name: 'その他', color: '#f39c12' }
-    },
-    instructors: [],
-    currentEditingSession: null,
-    isDirty: false // 未保存の変更があるか
+// グローバル変数とアプリケーション状態
+let campData = null;
+let scheduleData = {};
+let currentEditingKey = null;
+
+// 講師データ（内蔵版）
+const instructorsData = [
+    "千葉", "栗田", "中井", "佐藤", "町田", "古賀", "田口", "米田", 
+    "後藤", "田﨑", "佐々木", "栗原", "樋口", "朝見", "小松", "赤松", 
+    "成田", "今村", "佐野", "北林", "東山崎", "大川"
+];
+
+// カテゴリ設定
+const categories = {
+    sales: { name: 'セールス', color: '#3498db' },
+    service: { name: 'サービス', color: '#27ae60' },
+    gespro: { name: 'ゲスプロ', color: '#e74c3c' },
+    opemane: { name: 'オペマネ', color: '#9b59b6' },
+    other: { name: 'その他', color: '#f39c12' }
 };
 
-// 定数
-const CONSTANTS = {
-    START_TIME: '08:30',
-    END_TIME: '20:00',
-    TIME_SLOT_MINUTES: 15,
-    MAX_DURATION_DAYS: 10,
-    STORAGE_KEY: 'trainingScheduleData',
-    AUTO_SAVE_INTERVAL: 5000 // 5秒
-};
+// 時間スロット生成
+function generateTimeSlots() {
+    const slots = [];
+    for (let hour = 8; hour <= 20; hour++) {
+        for (let minute = 0; minute < 60; minute += 15) {
+            if (hour === 20 && minute > 0) break;
+            const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            slots.push(timeString);
+        }
+    }
+    return slots;
+}
 
-/**
- * アプリケーションの初期化
- */
+const timeSlots = generateTimeSlots();
+
+// アプリケーション初期化
 function initializeApp() {
     console.log('アプリケーションを初期化中...');
     
-    // ローカルストレージからデータを読み込み
-    loadDataFromStorage();
+    // 今日の日付をデフォルトに設定
+    setDefaultDate();
     
-    // イベントリスナーの設定
-    setupEventListeners();
+    // イベントリスナーを設定
+    bindEvents();
     
-    // 時間選択オプションの生成
-    generateTimeOptions();
-    
-    // 講師リストの初期化
-    initializeInstructorList();
-    
-    // カテゴリ色の適用
-    applyCategoryColors();
-    
-    // 初期表示の更新
-    updateDisplay();
-    
-    // 自動保存の設定
-    setupAutoSave();
+    // 保存されたデータを読み込み
+    loadData();
     
     console.log('アプリケーションの初期化完了');
 }
 
-/**
- * イベントリスナーの設定
- */
-function setupEventListeners() {
-    // ヘッダーボタン
-    document.getElementById('campSettingBtn').addEventListener('click', openCampSettingModal);
-    document.getElementById('addSessionBtn').addEventListener('click', openNewSessionModal);
-    document.getElementById('categorySettingBtn').addEventListener('click', openCategorySettingModal);
-    document.getElementById('saveBtn').addEventListener('click', saveData);
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    document.getElementById('printBtn').addEventListener('click', printSchedule);
+// デフォルト日付設定（次の月曜日）
+function setDefaultDate() {
+    const today = new Date();
+    const nextMonday = new Date(today);
+    const dayOfWeek = today.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+    nextMonday.setDate(today.getDate() + daysUntilMonday);
     
-    // モーダル関連
-    setupModalEventListeners();
-    
-    // キーボードショートカット
-    setupKeyboardShortcuts();
-    
-    // ウィンドウのリサイズ
-    window.addEventListener('resize', debounce(handleResize, 300));
-    
-    // ページ離脱時の警告
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    const startDateInput = document.getElementById('start-date');
+    if (startDateInput) {
+        startDateInput.value = nextMonday.toISOString().split('T')[0];
+    }
 }
 
-/**
- * モーダル関連のイベントリスナー設定
- */
-function setupModalEventListeners() {
-    // モーダルの外側クリックで閉じる
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal(modal.id);
-            }
-        });
-    });
-    
-    // ESCキーでモーダルを閉じる
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const openModal = document.querySelector('.modal[style*="flex"]');
-            if (openModal) {
-                closeModal(openModal.id);
-            }
+// イベントリスナー設定
+function bindEvents() {
+    // キャンプ期間設定関連
+    const campSetupBtn = document.getElementById('camp-setup-btn');
+    const setupStartBtn = document.getElementById('setup-start-btn');
+    const campModalClose = document.getElementById('camp-modal-close');
+    const campCancel = document.getElementById('camp-cancel');
+    const campForm = document.getElementById('camp-form');
+
+    if (campSetupBtn) campSetupBtn.addEventListener('click', showCampModal);
+    if (setupStartBtn) setupStartBtn.addEventListener('click', showCampModal);
+    if (campModalClose) campModalClose.addEventListener('click', hideCampModal);
+    if (campCancel) campCancel.addEventListener('click', hideCampModal);
+    if (campForm) campForm.addEventListener('submit', saveCampSettings);
+
+    // セッション関連
+    const sessionAddBtn = document.getElementById('session-add-btn');
+    const sessionModalClose = document.getElementById('session-modal-close');
+    const sessionCancel = document.getElementById('session-cancel');
+    const sessionForm = document.getElementById('session-form');
+
+    if (sessionAddBtn) sessionAddBtn.addEventListener('click', addSession);
+    if (sessionModalClose) sessionModalClose.addEventListener('click', hideSessionModal);
+    if (sessionCancel) sessionCancel.addEventListener('click', hideSessionModal);
+    if (sessionForm) sessionForm.addEventListener('submit', saveSession);
+
+    // その他のボタン
+    const saveBtn = document.getElementById('save-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const printBtn = document.getElementById('print-btn');
+
+    if (saveBtn) saveBtn.addEventListener('click', saveData);
+    if (exportBtn) exportBtn.addEventListener('click', exportData);
+    if (printBtn) printBtn.addEventListener('click', () => window.print());
+
+    // モーダル外クリックで閉じる
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
         }
     });
-    
-    // カラーピッカーの変更イベント
-    document.querySelectorAll('input[type="color"]').forEach(input => {
-        input.addEventListener('change', (e) => {
-            const preview = e.target.nextElementSibling;
-            if (preview && preview.classList.contains('color-preview')) {
-                preview.style.backgroundColor = e.target.value;
-            }
-        });
-    });
+
+    console.log('イベントリスナーの設定完了');
 }
 
-/**
- * キーボードショートカットの設定
- */
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + S: 保存
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveData();
-        }
-        
-        // Ctrl/Cmd + N: 新規セッション
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            if (AppState.campInfo.startDate) {
-                openNewSessionModal();
-            }
-        }
-        
-        // Ctrl/Cmd + P: 印刷
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-            e.preventDefault();
-            printSchedule();
-        }
-    });
-}
-
-/**
- * キャンプ期間設定モーダルを開く
- */
-function openCampSettingModal() {
-    const modal = document.getElementById('campSettingModal');
-    
-    // 既存の設定を読み込み
-    if (AppState.campInfo.name) {
-        document.getElementById('campName').value = AppState.campInfo.name;
-    }
-    if (AppState.campInfo.startDate) {
-        document.getElementById('startDate').value = AppState.campInfo.startDate;
-    }
-    if (AppState.campInfo.duration) {
-        document.getElementById('duration').value = AppState.campInfo.duration;
-    }
-    
-    openModal('campSettingModal');
-}
-
-/**
- * キャンプ期間設定を保存
- */
-function saveCampSettings() {
-    const name = document.getElementById('campName').value.trim();
-    const startDate = document.getElementById('startDate').value;
-    const duration = parseInt(document.getElementById('duration').value);
-    
-    if (!name || !startDate || !duration) {
-        alert('すべての項目を入力してください。');
-        return;
-    }
-    
-    // 実際の研修日を計算（日曜日を除く）
-    const actualDays = calculateActualDays(startDate, duration);
-    
-    // 状態を更新
-    AppState.campInfo = {
-        name,
-        startDate,
-        duration,
-        actualDays
-    };
-    
-    // セッションデータを初期化
-    initializeSessionData();
-    
-    // 表示を更新
-    updateDisplay();
-    renderScheduleTable();
-    
-    // モーダルを閉じる
-    closeModal('campSettingModal');
-    
-    // データを保存
-    markAsDirty();
-    saveData();
-}
-
-/**
- * 実際の研修日を計算（日曜日を除く）
- */
-function calculateActualDays(startDate, duration) {
-    const actualDays = [];
-    const start = new Date(startDate);
-    let daysAdded = 0;
-    let currentDate = new Date(start);
-    
-    while (daysAdded < duration) {
-        // 日曜日（0）はスキップ
-        if (currentDate.getDay() !== 0) {
-            actualDays.push(formatDate(currentDate));
-            daysAdded++;
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    return actualDays;
-}
-
-/**
- * セッションデータの初期化
- */
-function initializeSessionData() {
-    // 既存のセッションで有効な日付のものは保持
-    const newSessions = {};
-    
-    AppState.campInfo.actualDays.forEach(date => {
-        newSessions[date] = AppState.sessions[date] || [];
-    });
-    
-    AppState.sessions = newSessions;
-}
-
-/**
- * 時間選択オプションの生成
- */
-function generateTimeOptions() {
-    const startTime = document.getElementById('sessionStartTime');
-    if (!startTime) return;
-    
-    const times = generateTimeSlots();
-    startTime.innerHTML = times.map(time => 
-        `<option value="${time}">${time}</option>`
-    ).join('');
-}
-
-/**
- * 時間スロットの生成
- */
-function generateTimeSlots() {
-    const slots = [];
-    const [startHour, startMin] = CONSTANTS.START_TIME.split(':').map(Number);
-    const [endHour, endMin] = CONSTANTS.END_TIME.split(':').map(Number);
-    
-    const startMinutes = startHour * 60 + startMin;
-    const endMinutes = endHour * 60 + endMin;
-    
-    for (let minutes = startMinutes; minutes < endMinutes; minutes += CONSTANTS.TIME_SLOT_MINUTES) {
-        const hour = Math.floor(minutes / 60);
-        const min = minutes % 60;
-        slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`);
-    }
-    
-    return slots;
-}
-
-/**
- * 講師リストの初期化
- */
-function initializeInstructorList() {
-    // LocalStorageから保存された講師リストを読み込む
-    const savedInstructors = loadInstructorsFromStorage();
-    
-    // 初回起動時のみデフォルトの講師を読み込む
-    if (savedInstructors.length === 0) {
-        // デフォルトの講師リストを読み込む
-        fetch('data/instructors.json')
-            .then(response => response.json())
-            .then(data => {
-                AppState.instructors = data.instructors || ['千葉', '栗田', '山田', '佐藤', '鈴木'];
-                saveInstructorsToStorage();
-                updateInstructorDatalist();
-            })
-            .catch(error => {
-                console.error('講師リストの読み込みエラー:', error);
-                AppState.instructors = ['千葉', '栗田', '山田', '佐藤', '鈴木'];
-                updateInstructorDatalist();
-            });
-    } else {
-        AppState.instructors = savedInstructors;
-        updateInstructorDatalist();
-    }
-}
-
-/**
- * 講師リストをLocalStorageから読み込む
- */
-function loadInstructorsFromStorage() {
-    try {
-        const saved = localStorage.getItem('trainingScheduleInstructors');
-        return saved ? JSON.parse(saved) : [];
-    } catch (error) {
-        console.error('講師リスト読み込みエラー:', error);
-        return [];
-    }
-}
-
-/**
- * 講師リストをLocalStorageに保存
- */
-function saveInstructorsToStorage() {
-    try {
-        localStorage.setItem('trainingScheduleInstructors', JSON.stringify(AppState.instructors));
-    } catch (error) {
-        console.error('講師リスト保存エラー:', error);
-    }
-}
-
-/**
- * 講師データリストを更新
- */
-function updateInstructorDatalist() {
-    const datalist = document.getElementById('instructorList');
-    if (datalist) {
-        // 重複を除去してソート
-        const uniqueInstructors = [...new Set(AppState.instructors)].sort();
-        datalist.innerHTML = uniqueInstructors.map(name => 
-            `<option value="${name}">`
-        ).join('');
-    }
-}
-
-/**
- * 講師を追加
- */
-function addInstructor(name) {
-    if (!name || name.trim() === '') return false;
-    
-    const trimmedName = name.trim();
-    if (!AppState.instructors.includes(trimmedName)) {
-        AppState.instructors.push(trimmedName);
-        saveInstructorsToStorage();
-        updateInstructorDatalist();
-        return true;
-    }
-    return false;
-}
-
-/**
- * 講師を削除
- */
-function removeInstructor(name) {
-    const index = AppState.instructors.indexOf(name);
-    if (index > -1) {
-        // その講師が使われているセッションがあるかチェック
-        let isUsed = false;
-        Object.values(AppState.sessions).forEach(sessions => {
-            sessions.forEach(session => {
-                if (session.instructor === name) {
-                    isUsed = true;
-                }
-            });
-        });
-        
-        if (isUsed) {
-            return { success: false, message: 'この講師は既存のセッションで使用されています' };
-        }
-        
-        AppState.instructors.splice(index, 1);
-        saveInstructorsToStorage();
-        updateInstructorDatalist();
-        return { success: true };
-    }
-    return { success: false, message: '講師が見つかりません' };
-}
-
-/**
- * カテゴリ色の適用
- */
-function applyCategoryColors() {
-    // CSS変数として設定
-    const root = document.documentElement;
-    Object.entries(AppState.categories).forEach(([key, category]) => {
-        root.style.setProperty(`--category-${key}`, category.color);
-    });
-    
-    // 凡例の更新
-    updateCategoryLegend();
-}
-
-/**
- * カテゴリ凡例の更新
- */
-function updateCategoryLegend() {
-    const legendItems = document.querySelectorAll('.legend-item');
-    legendItems.forEach(item => {
-        const category = item.dataset.category;
-        const colorBox = item.querySelector('.legend-color');
-        if (colorBox && AppState.categories[category]) {
-            colorBox.style.backgroundColor = AppState.categories[category].color;
-        }
-    });
-}
-
-/**
- * 表示の更新
- */
-function updateDisplay() {
-    const hasSchedule = AppState.campInfo.startDate && AppState.campInfo.duration > 0;
-    
-    // 空の状態とスケジュール表示の切り替え
-    document.getElementById('emptyState').style.display = hasSchedule ? 'none' : 'flex';
-    document.getElementById('scheduleContainer').style.display = hasSchedule ? 'block' : 'none';
-    document.getElementById('categoryLegend').style.display = hasSchedule ? 'block' : 'none';
-    
-    // キャンプ情報バーの更新
-    if (hasSchedule) {
-        updateCampInfoBar();
-    }
-}
-
-/**
- * キャンプ情報バーの更新
- */
-function updateCampInfoBar() {
-    const campInfoBar = document.getElementById('campInfoBar');
-    const campTitle = document.getElementById('campTitle');
-    const campPeriod = document.getElementById('campPeriod');
-    const campDuration = document.getElementById('campDuration');
-    
-    if (AppState.campInfo.name) {
-        campTitle.textContent = AppState.campInfo.name;
-        
-        const startDate = new Date(AppState.campInfo.startDate);
-        const endDate = new Date(AppState.campInfo.actualDays[AppState.campInfo.actualDays.length - 1]);
-        
-        campPeriod.textContent = `${formatDateJapanese(startDate)} 〜 ${formatDateJapanese(endDate)}`;
-        campDuration.textContent = `${AppState.campInfo.duration}日間`;
-        
-        campInfoBar.style.display = 'block';
-    }
-}
-
-/**
- * 日付を日本語形式でフォーマット
- */
-function formatDateJapanese(date) {
-    const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const weekday = weekdays[date.getDay()];
-    
-    return `${year}年${month}月${day}日(${weekday})`;
-}
-
-/**
- * 日付をYYYY-MM-DD形式でフォーマット
- */
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
-}
-
-/**
- * データの保存
- */
-function saveData() {
-    const data = {
-        version: '1.0',
-        campInfo: AppState.campInfo,
-        sessions: AppState.sessions,
-        categories: AppState.categories,
-        instructors: AppState.instructors,
-        savedAt: new Date().toISOString()
-    };
-    
-    try {
-        localStorage.setItem(CONSTANTS.STORAGE_KEY, JSON.stringify(data));
-        AppState.isDirty = false;
-        showToast('保存しました', 'success');
-    } catch (error) {
-        console.error('保存エラー:', error);
-        showToast('保存に失敗しました', 'error');
-    }
-}
-
-/**
- * ローカルストレージからデータを読み込み
- */
-function loadDataFromStorage() {
-    try {
-        const savedData = localStorage.getItem(CONSTANTS.STORAGE_KEY);
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            
-            // データの復元
-            AppState.campInfo = data.campInfo || AppState.campInfo;
-            AppState.sessions = data.sessions || AppState.sessions;
-            AppState.categories = data.categories || AppState.categories;
-            AppState.instructors = data.instructors || AppState.instructors;
-            
-            console.log('データを読み込みました:', data.savedAt);
-        }
-    } catch (error) {
-        console.error('データ読み込みエラー:', error);
-        showToast('データの読み込みに失敗しました', 'error');
-    }
-}
-
-/**
- * 自動保存の設定
- */
-function setupAutoSave() {
-    setInterval(() => {
-        if (AppState.isDirty) {
-            saveData();
-        }
-    }, CONSTANTS.AUTO_SAVE_INTERVAL);
-}
-
-/**
- * 変更フラグを立てる
- */
-function markAsDirty() {
-    AppState.isDirty = true;
-}
-
-/**
- * ページ離脱時の警告
- */
-function handleBeforeUnload(e) {
-    if (AppState.isDirty) {
-        e.preventDefault();
-        e.returnValue = '未保存の変更があります。ページを離れますか？';
-    }
-}
-
-/**
- * リサイズハンドラー
- */
-function handleResize() {
-    // スケジュール表の再描画が必要な場合の処理
-    if (AppState.campInfo.startDate) {
-        adjustScheduleLayout();
-    }
-}
-
-/**
- * トースト通知の表示
- */
-function showToast(message, type = 'info') {
-    // 既存のトーストを削除
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    // 新しいトーストを作成
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.textContent = message;
-    
-    // スタイルを追加
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 24px;
-        background-color: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
-        color: white;
-        border-radius: 4px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        z-index: 9999;
-        animation: slideUp 0.3s ease-out;
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // 3秒後に削除
-    setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-/**
- * デバウンス関数
- */
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-/**
- * モーダルを開く
- */
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
+// キャンプ期間設定モーダル表示
+function showCampModal() {
+    const modal = document.getElementById('camp-modal');
     if (modal) {
-        modal.style.display = 'flex';
-        // アクセシビリティ: フォーカスを移動
-        const firstInput = modal.querySelector('input, select, textarea');
-        if (firstInput) {
-            setTimeout(() => firstInput.focus(), 100);
-        }
+        modal.style.display = 'block';
     }
 }
 
-/**
- * モーダルを閉じる
- */
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
+// キャンプ期間設定モーダル非表示
+function hideCampModal() {
+    const modal = document.getElementById('camp-modal');
     if (modal) {
         modal.style.display = 'none';
     }
 }
 
-// DOMContentLoaded時に初期化
-document.addEventListener('DOMContentLoaded', initializeApp);
+// キャンプ期間設定保存
+function saveCampSettings(e) {
+    e.preventDefault();
+    
+    const campName = document.getElementById('camp-name').value;
+    const startDate = document.getElementById('start-date').value;
+    const duration = parseInt(document.getElementById('duration').value);
+
+    if (!campName || !startDate || !duration) {
+        showAlert('すべての項目を入力してください。', 'error');
+        return;
+    }
+
+    campData = {
+        name: campName,
+        startDate: startDate,
+        duration: duration,
+        dates: generateCampDates(startDate, duration)
+    };
+
+    scheduleData = {};
+    generateScheduleTable();
+    hideCampModal();
+    showAlert('キャンプ期間が設定されました！', 'success');
+    
+    console.log('キャンプ期間設定:', campData);
+}
+
+// キャンプ日程生成（日曜日をスキップ）
+function generateCampDates(startDate, duration) {
+    const dates = [];
+    const start = new Date(startDate);
+    let currentDate = new Date(start);
+    let addedDays = 0;
+
+    while (addedDays < duration) {
+        // 日曜日をスキップ
+        if (currentDate.getDay() !== 0) {
+            dates.push(new Date(currentDate));
+            addedDays++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+}
+
+// スケジュール表生成
+function generateScheduleTable() {
+    const container = document.getElementById('schedule-table-container');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const scheduleContainer = document.getElementById('schedule-container');
+
+    if (!container || !campData) return;
+
+    // ヘッダー情報更新
+    const campTitle = document.getElementById('camp-title');
+    const campInfo = document.getElementById('camp-info');
+    
+    if (campTitle) campTitle.textContent = campData.name;
+    if (campInfo) {
+        campInfo.textContent = `期間: ${campData.startDate} から ${campData.duration}日間`;
+    }
+
+    // テーブル生成
+    const table = document.createElement('table');
+    table.className = 'schedule-table';
+
+    // ヘッダー行
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = '<th class="time-cell">時間</th>';
+    
+    campData.dates.forEach(date => {
+        const dateStr = date.toLocaleDateString('ja-JP', { 
+            month: 'short', 
+            day: 'numeric', 
+            weekday: 'short' 
+        });
+        headerRow.innerHTML += `<th class="date-header">${dateStr}</th>`;
+    });
+    table.appendChild(headerRow);
+
+    // 時間スロット行
+    timeSlots.forEach(time => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="time-cell">${time}</td>`;
+        
+        campData.dates.forEach(date => {
+            const dateKey = date.toISOString().split('T')[0];
+            const timeKey = `${dateKey}-${time}`;
+            const cell = document.createElement('td');
+            cell.className = 'session-cell';
+            cell.dataset.date = dateKey;
+            cell.dataset.time = time;
+            cell.addEventListener('click', () => editSession(dateKey, time));
+            
+            if (scheduleData[timeKey]) {
+                cell.innerHTML = renderSession(scheduleData[timeKey]);
+            }
+            
+            row.appendChild(cell);
+        });
+        
+        table.appendChild(row);
+    });
+
+    container.innerHTML = '';
+    container.appendChild(table);
+
+    // 画面切り替え
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (scheduleContainer) scheduleContainer.classList.remove('hidden');
+    
+    console.log('スケジュール表を生成しました');
+}
+
+// セッション表示
+function renderSession(session) {
+    const categoryClass = `category-${session.category}`;
+    return `
+        <div class="session ${categoryClass}" title="${session.notes || ''}">
+            <div style="font-weight: bold; font-size: 0.8em;">${session.title}</div>
+            <div style="font-size: 0.7em;">${session.instructor}</div>
+        </div>
+    `;
+}
+
+// セッション編集
+function editSession(date, time) {
+    if (!campData) {
+        showAlert('まずキャンプ期間を設定してください。', 'warning');
+        return;
+    }
+
+    const timeKey = `${date}-${time}`;
+    const existingSession = scheduleData[timeKey];
+
+    // 時間オプション生成
+    populateTimeOptions();
+    
+    // 講師オプション生成
+    populateInstructorOptions();
+
+    // フォームに既存データを設定
+    if (existingSession) {
+        document.getElementById('session-modal-title').textContent = 'セッション編集';
+        document.getElementById('session-date').value = date;
+        document.getElementById('session-time').value = time;
+        document.getElementById('session-duration').value = existingSession.duration;
+        document.getElementById('session-title').value = existingSession.title;
+        document.getElementById('session-category').value = existingSession.category;
+        document.getElementById('session-instructor').value = existingSession.instructor;
+        const notesField = document.getElementById('session-notes');
+        if (notesField) notesField.value = existingSession.notes || '';
+    } else {
+        document.getElementById('session-modal-title').textContent = 'セッション追加';
+        document.getElementById('session-form').reset();
+        document.getElementById('session-date').value = date;
+        document.getElementById('session-time').value = time;
+        document.getElementById('session-duration').value = '90';
+    }
+
+    currentEditingKey = timeKey;
+    showSessionModal();
+}
+
+// セッションモーダル表示
+function showSessionModal() {
+    const modal = document.getElementById('session-modal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// セッションモーダル非表示
+function hideSessionModal() {
+    const modal = document.getElementById('session-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 時間オプション生成
+function populateTimeOptions() {
+    const timeSelect = document.getElementById('session-time');
+    if (!timeSelect) return;
+    
+    timeSelect.innerHTML = '';
+    timeSlots.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        timeSelect.appendChild(option);
+    });
+}
+
+// 講師オプション生成
+function populateInstructorOptions() {
+    const instructorSelect = document.getElementById('session-instructor');
+    if (!instructorSelect) return;
+    
+    // input要素の場合はdatalistを使用
+    if (instructorSelect.tagName === 'INPUT') {
+        let datalist = document.getElementById('instructor-datalist');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'instructor-datalist';
+            instructorSelect.setAttribute('list', 'instructor-datalist');
+            instructorSelect.parentNode.appendChild(datalist);
+        }
+        
+        datalist.innerHTML = '';
+        instructorsData.forEach(instructor => {
+            const option = document.createElement('option');
+            option.value = instructor;
+            datalist.appendChild(option);
+        });
+    }
+}
+
+// セッション追加
+function addSession() {
+    if (!campData) {
+        showAlert('まずキャンプ期間を設定してください。', 'warning');
+        return;
+    }
+
+    const firstDate = campData.dates[0].toISOString().split('T')[0];
+    const firstTime = timeSlots[0];
+    editSession(firstDate, firstTime);
+}
+
+// セッション保存
+function saveSession(e) {
+    e.preventDefault();
+
+    const sessionData = {
+        date: document.getElementById('session-date').value,
+        time: document.getElementById('session-time').value,
+        duration: parseInt(document.getElementById('session-duration').value),
+        title: document.getElementById('session-title').value,
+        category: document.getElementById('session-category').value,
+        instructor: document.getElementById('session-instructor').value,
+        notes: document.getElementById('session-notes') ? document.getElementById('session-notes').value : ''
+    };
+
+    if (!sessionData.title || !sessionData.category || !sessionData.instructor) {
+        showAlert('必須項目（タイトル、カテゴリ、講師）を入力してください。', 'error');
+        return;
+    }
+
+    const timeKey = `${sessionData.date}-${sessionData.time}`;
+    scheduleData[timeKey] = sessionData;
+
+    generateScheduleTable();
+    hideSessionModal();
+    showAlert('セッションが保存されました！', 'success');
+    
+    console.log('セッション保存:', sessionData);
+}
+
+// データ保存（LocalStorage）
+function saveData() {
+    try {
+        const data = {
+            campData: campData,
+            scheduleData: scheduleData,
+            categories: categories,
+            lastModified: new Date().toISOString()
+        };
+
+        localStorage.setItem('trainingScheduleData', JSON.stringify(data));
+        showAlert('データが保存されました！', 'success');
+        console.log('データ保存:', data);
+    } catch (error) {
+        console.error('データ保存エラー:', error);
+        showAlert('データの保存に失敗しました。', 'error');
+    }
+}
+
+// データ読み込み（LocalStorage）
+function loadData() {
+    try {
+        const saved = localStorage.getItem('trainingScheduleData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            campData = data.campData;
+            scheduleData = data.scheduleData || {};
+
+            if (campData && campData.dates) {
+                // 日付オブジェクトを復元
+                campData.dates = campData.dates.map(d => new Date(d));
+                generateScheduleTable();
+                console.log('データ読み込み完了:', data);
+            }
+        }
+    } catch (error) {
+        console.error('データ読み込みエラー:', error);
+        showAlert('データの読み込みに失敗しました。', 'error');
+    }
+}
+
+// データエクスポート
+function exportData() {
+    try {
+        const data = {
+            campData: campData,
+            scheduleData: scheduleData,
+            categories: categories,
+            exportDate: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `training-schedule-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert('データをエクスポートしました！', 'success');
+    } catch (error) {
+        console.error('エクスポートエラー:', error);
+        showAlert('エクスポートに失敗しました。', 'error');
+    }
+}
+
+// アラート表示
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#3498db'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (document.body.contains(alertDiv)) {
+                document.body.removeChild(alertDiv);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// ページ読み込み完了時の初期化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM読み込み完了');
+    initializeApp();
+});
+
+// データを読み込みました
+console.log('データを読み込みました:', new Date().toLocaleString());
+console.log('アプリケーションの初期化完了');
