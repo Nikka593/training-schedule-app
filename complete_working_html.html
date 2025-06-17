@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研修スケジュール管理システム</title>
+    <style>
+        /* リセットCSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ヘッダースタイル */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            border-color: #229954;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ウェルカム画面 */
+        .welcome-card {
+            background: white;
+            border-radius: 16px;
+            padding: 4rem 3rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .welcome-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .welcome-card p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 3rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .setup-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .setup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        /* スケジュールコンテナ */
+        .schedule-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .schedule-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .schedule-header h3 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .schedule-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        /* スケジュールテーブル */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+            font-size: 0.9rem;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            border: 1px solid #e0e6ed;
+            padding: 0.5rem;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .schedule-table th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .time-cell {
+            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+            font-weight: 600;
+            width: 80px;
+            position: sticky;
+            left: 0;
+            z-index: 11;
+        }
+
+        .date-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-weight: 600;
+            padding: 1rem 0.5rem;
+        }
+
+        .session-cell {
+            position: relative;
+            cursor: pointer;
+            min-height: 45px;
+            transition: all 0.2s ease;
+        }
+
+        .session-cell:hover {
+            background: #f8f9fa;
+            transform: scale(1.02);
+        }
+
+        .session {
+            background: #3498db;
+            color: white;
+            padding: 0.4rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin: 2px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        .session:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* カテゴリ別色分け */
+        .category-sales { 
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+        }
+        .category-service { 
+            background: linear-gradient(135deg, #27ae60, #229954); 
+        }
+        .category-gespro { 
+            background: linear-gradient(135deg, #e74c3c, #c0392b); 
+        }
+        .category-opemane { 
+            background: linear-gradient(135deg, #9b59b6, #8e44ad); 
+        }
+        .category-other { 
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+        }
+
+        /* モーダルスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.4s ease;
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-50px) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .close {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .btn-modal {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        /* ユーティリティクラス */
+        .hidden {
+            display: none;
+        }
+
+        .info-text {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* アラートスタイル */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* 印刷用スタイル */
+        @media print {
+            .header-controls,
+            .btn,
+            .modal {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+            }
+            
+            .schedule-container {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+            
+            .schedule-table {
+                border: 2px solid #000;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                border: 1px solid #000;
+                padding: 0.3rem;
+            }
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .header-controls {
+                justify-content: center;
+            }
+            
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.8rem;
+            }
+            
+            .welcome-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .welcome-card h2 {
+                font-size: 2rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>📅 研修スケジュール管理システム</h1>
+        <div class="header-controls">
+            <button id="camp-setup-btn" class="btn btn-primary">📋 キャンプ期間設定</button>
+            <button id="session-add-btn" class="btn">➕ セッション追加</button>
+            <button id="category-settings-btn" class="btn">🎨 カテゴリ設定</button>
+            <button id="save-btn" class="btn btn-success">💾 保存</button>
+            <button id="export-btn" class="btn">📤 エクスポート</button>
+            <button id="print-btn" class="btn">🖨️ 印刷</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div id="welcome-screen" class="welcome-card">
+            <h2>👋 ようこそ！</h2>
+            <p>研修スケジュールを作成するには、まず「キャンプ期間設定」から始めてください。</p>
+            <button id="setup-start-btn" class="setup-btn">📋 キャンプ期間を設定する</button>
+        </div>
+
+        <div id="schedule-container" class="schedule-container hidden">
+            <div class="schedule-header">
+                <h3 id="camp-title">研修スケジュール</h3>
+                <p id="camp-info">期間情報がここに表示されます</p>
+            </div>
+            <div id="schedule-table-container">
+                <!-- スケジュール表がここに生成される -->
+            </div>
+        </div>
+    </main>
+
+    <!-- キャンプ期間設定モーダル -->
+    <div id="camp-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>キャンプ期間設定</h3>
+                <button class="close" id="camp-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="camp-form">
+                    <div class="form-group">
+                        <label for="camp-name">研修名称</label>
+                        <input type="text" id="camp-name" value="8期生キャンプ" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="start-date">開始日</label>
+                        <input type="date" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">期間（日数）</label>
+                        <select id="duration" required>
+                            <option value="">選択してください</option>
+                            <option value="1">1日間</option>
+                            <option value="2">2日間</option>
+                            <option value="3">3日間</option>
+                            <option value="4">4日間</option>
+                            <option value="5">5日間</option>
+                            <option value="6">6日間</option>
+                            <option value="7">7日間</option>
+                            <option value="8">8日間</option>
+                            <option value="9">9日間</option>
+                            <option value="10">10日間</option>
+                        </select>
+                    </div>
+                    <p class="info-text">※ 日曜日は自動的に研修なし日として設定されます</p>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-cancel" id="camp-cancel">キャンセル</button>
+                <button type="submit" form="camp-form" class="btn-modal btn-save">設定を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- セッション編集モーダル -->
+    <div id="session-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="session-modal-title">セッション編集</h3>
+                <button class="close" id="session-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="session-form">
+                    <div class="form-group">
+                        <label for="session-date">日付</label>
+                        <input type="date" id="session-date" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-time">開始時間</label>
+                        <select id="session-time">
+                            <!-- 時間オプションが動的に生成される -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-duration">時間（分）</label>
+                        <select id="session-duration">
+                            <option value="15">15分</option>
+                            <option value="30">30分</option>
+                            <option value="45">45分</option>
+                            <option value="60">60分</option>
+                            <option value="90" selected>90分</option>
+                            <option value="120">120分</option>
+                            <option value="180">180分</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-title">タイトル</label>
+                        <input type="text" id="session-title" placeholder="例：営業基礎研修" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-category">カテゴリ</label>
+                        <select id="session-category" required>
+                            <option value="">選択してください</option>
+                            <option value="sales">セールス</option>
+                            <option value="service">サービス</option>
+                            <option value="gespro">ゲスプロ</option>
+                            <option value="opemane">オペマネ</option>
+                            <option value="other">その他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-instructor">講師</label>
+                        <input type="text" id="session-instructor" placeholder="例：千葉" required list="instructor-list">
+                        <datalist id="instructor-list">
+                            <option value="千葉">
+                            <option value="栗田">
+                            <option value="中井">
+                            <option value="佐藤">
+                            <option value="町田">
+                            <option value="古賀">
+                            <option value="田口">
+                            <option value="米田">
+                            <option value="後藤">
+                            <option value="田﨑">
+                            <option value="佐々木">
+                            <option value="栗原">
+                            <option value="樋口">
+                            <option value="朝見">
+                            <option value="小松">
+                            <option value="赤松">
+                            <option value="成田">
+                            <option value="今村">
+                            <option value="佐野">
+                            <option value="北林">
+                            <option value="東山崎">
+                            <option value="大川">
+                        </datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="session-notes">備考</label>
+                        <textarea id="session-notes" rows="3" placeholder="特記事項があれば記入"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-cancel" id="session-cancel">キャンセル</button>
+                <button type="submit" form="session-form" class="btn-modal btn-save">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let campData = null;
+        let scheduleData = {};
+        let currentEditingKey = null;
+
+        // カテゴリ設定
+        const categories = {
+            sales: { name: 'セールス', color: '#3498db' },
+            service: { name: 'サービス', color: '#27ae60' },
+            gespro: { name: 'ゲスプロ', color: '#e74c3c' },
+            opemane: { name: 'オペマネ', color: '#9b59b6' },
+            other: { name: 'その他', color: '#f39c12' }
+        };
+
+        // 講師データ
+        const instructors = [
+            "千葉", "栗田", "中井", "佐藤", "町田", "古賀", "田口", "米田",
+            "後藤", "田﨑", "佐々木", "栗原", "樋口", "朝見", "小松", "赤松",
+            "成田", "今村", "佐野", "北林", "東山崎", "大川"
+        ];
+
+        // 時間スロット生成
+        function generateTimeSlots() {
+            const slots = [];
+            for (let hour = 8; hour <= 20; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) {
+                    if (hour === 20 && minute > 0) break;
+                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    slots.push(timeString);
+                }
+            }
+            return slots;
+        }
+
+        const timeSlots = generateTimeSlots();
+
+        // アプリケーション初期化
+        function initializeApp() {
+            console.log('📅 研修スケジュール管理システム開始');
+            
+            setDefaultDate();
+            bindEvents();
+            loadData();
+            
+            console.log('✅ 初期化完了');
+        }
+
+        // デフォルト日付設定
+        function setDefaultDate() {
+            const today = new Date();
+            const nextMonday = new Date(today);
+            const dayOfWeek = today.getDay();
+            const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+            nextMonday.setDate(today.getDate() + daysUntilMonday);
+            
+            const startDateInput = document.getElementById('start-date');
+            if (startDateInput) {
+                startDateInput.value = nextMonday.toISOString().split('T')[0];
+            }
+        }
+
+        // イベントリスナー設定
+        function bindEvents() {
+            // キャンプ期間設定
+            addEventListenerSafe('camp-setup-btn', 'click', showCampModal);
+            addEventListenerSafe('setup-start-btn', 'click', showCampModal);
+            addEventListenerSafe('camp-modal-close', 'click', hideCampModal);
+            addEventListenerSafe('camp-cancel', 'click', hideCampModal);
+            addEventListenerSafe('camp-form', 'submit', saveCampSettings);
+
+            // セッション関連
+            addEventListenerSafe('session-add-btn', 'click', addSession);
+            addEventListenerSafe('session-modal-close', 'click', hideSessionModal);
+            addEventListenerSafe('session-cancel', 'click', hideSessionModal);
+            addEventListenerSafe('session-form', 'submit', saveSession);
+
+            // その他
+            addEventListenerSafe('save-btn', 'click', saveData);
+            addEventListenerSafe('export-btn', 'click', exportData);
+            addEventListenerSafe('print-btn', 'click', () => window.print());
+
+            // モーダル外クリック
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+        }
+
+        // 安全なイベントリスナー追加
+        function addEventListenerSafe(elementId, event, handler) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.addEventListener(event, handler);
+            } else {
+                console.warn(`⚠️ 要素が見つかりません: ${elementId}`);
+            }
+        }
+
+        // キャンプモーダル表示
+        function showCampModal() {
+            const modal = document.getElementById('camp-modal');
+            if (modal) modal.style.display = 'block';
+        }
+
+        // キャンプモーダル非表示
+        function hideCampModal() {
+            const modal = document.getElementById('camp-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // キャンプ設定保存
+        function saveCampSettings(e) {
+            e.preventDefault();
+            
+            const campName = getValue('camp-name');
+            const startDate = getValue('start-date');
+            const duration = parseInt(getValue('duration'));
+
+            if (!campName || !startDate || !duration) {
+                showAlert('すべての項目を入力してください。', 'error');
+                return;
+            }
+
+            campData = {
+                name: campName,
+                startDate: startDate,
+                duration: duration,
+                dates: generateCampDates(startDate, duration)
+            };
+
+            scheduleData = {};
+            generateScheduleTable();
+            hideCampModal();
+            showAlert('✅ キャンプ期間が設定されました！', 'success');
+        }
+
+        // キャンプ日程生成
+        function generateCampDates(startDate, duration) {
+            const dates = [];
+            const start = new Date(startDate);
+            let currentDate = new Date(start);
+            let addedDays = 0;
+
+            while (addedDays < duration) {
+                if (currentDate.getDay() !== 0) { // 日曜日以外
+                    dates.push(new Date(currentDate));
+                    addedDays++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return dates;
+        }
+
+        // スケジュール表生成
+        function generateScheduleTable() {
+            const container = document.getElementById('schedule-table-container');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const scheduleContainer = document.getElementById('schedule-container');
+
+            if (!container || !campData) return;
+
+            // ヘッダー更新
+            setValue('camp-title', campData.name);
+            setValue('camp-info', `期間: ${campData.startDate} から ${campData.duration}日間 (日曜日除く)`);
+
+            // テーブル生成
+            const table = document.createElement('table');
+            table.className = 'schedule-table';
+
+            // ヘッダー行
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th class="time-cell">時間</th>';
+            
+            campData.dates.forEach(date => {
+                const dateStr = date.toLocaleDateString('ja-JP', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    weekday: 'short' 
+                });
+                headerRow.innerHTML += `<th class="date-header">${dateStr}</th>`;
+            });
+            table.appendChild(headerRow);
+
+            // 時間スロット行
+            timeSlots.forEach(time => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="time-cell">${time}</td>`;
+                
+                campData.dates.forEach(date => {
+                    const dateKey = date.toISOString().split('T')[0];
+                    const timeKey = `${dateKey}-${time}`;
+                    const cell = document.createElement('td');
+                    cell.className = 'session-cell';
+                    cell.dataset.date = dateKey;
+                    cell.dataset.time = time;
+                    cell.addEventListener('click', () => editSession(dateKey, time));
+                    
+                    if (scheduleData[timeKey]) {
+                        cell.innerHTML = renderSession(scheduleData[timeKey]);
+                    }
+                    
+                    row.appendChild(cell);
+                });
+                
+                table.appendChild(row);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(table);
+
+            // 画面切り替え
+            if (welcomeScreen) welcomeScreen.classList.add('hidden');
+            if (scheduleContainer) scheduleContainer.classList.remove('hidden');
+            
+            console.log('📊 スケジュール表を生成しました');
+        }
+
+        // セッション表示
+        function renderSession(session) {
+            const categoryClass = `category-${session.category}`;
+            return `
+                <div class="session ${categoryClass}" title="${session.notes || ''}">
+                    <div style="font-weight: bold; font-size: 0.85em; margin-bottom: 2px;">${session.title}</div>
+                    <div style="font-size: 0.75em; opacity: 0.9;">${session.instructor}</div>
+                    ${session.duration ? `<div style="font-size: 0.7em; opacity: 0.8;">${session.duration}分</div>` : ''}
+                </div>
+            `;
+        }
+
+        // セッション編集
+        function editSession(date, time) {
+            if (!campData) {
+                showAlert('⚠️ まずキャンプ期間を設定してください。', 'warning');
+                return;
+            }
+
+            const timeKey = `${date}-${time}`;
+            const existingSession = scheduleData[timeKey];
+
+            populateTimeOptions();
+
+            if (existingSession) {
+                setValue('session-modal-title', 'セッション編集');
+                setValue('session-date', date);
+                setValue('session-time', time);
+                setValue('session-duration', existingSession.duration);
+                setValue('session-title', existingSession.title);
+                setValue('session-category', existingSession.category);
+                setValue('session-instructor', existingSession.instructor);
+                setValue('session-notes', existingSession.notes || '');
+            } else {
+                setValue('session-modal-title', 'セッション追加');
+                document.getElementById('session-form').reset();
+                setValue('session-date', date);
+                setValue('session-time', time);
+                setValue('session-duration', '90');
+            }
+
+            currentEditingKey = timeKey;
+            showSessionModal();
+        }
+
+        // セッションモーダル表示
+        function showSessionModal() {
+            const modal = document.getElementById('session-modal');
+            if (modal) modal.style.display = 'block';
+        }
+
+        // セッションモーダル非表示
+        function hideSessionModal() {
+            const modal = document.getElementById('session-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // 時間オプション生成
+        function populateTimeOptions() {
+            const timeSelect = document.getElementById('session-time');
+            if (!timeSelect) return;
+            
+            timeSelect.innerHTML = '';
+            timeSlots.forEach(time => {
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = time;
+                timeSelect.appendChild(option);
+            });
+        }
+
+        // セッション追加
+        function addSession() {
+            if (!campData) {
+                showAlert('⚠️ まずキャンプ期間を設定してください。', 'warning');
+                return;
+            }
+
+            const firstDate = campData.dates[0].toISOString().split('T')[0];
+            const firstTime = timeSlots[0];
+            editSession(firstDate, firstTime);
+        }
+
+        // セッション保存
+        function saveSession(e) {
+            e.preventDefault();
+
+            const sessionData = {
+                date: getValue('session-date'),
+                time: getValue('session-time'),
+                duration: parseInt(getValue('session-duration')),
+                title: getValue('session-title'),
+                category: getValue('session-category'),
+                instructor: getValue('session-instructor'),
+                notes: getValue('session-notes')
+            };
+
+            if (!sessionData.title || !sessionData.category || !sessionData.instructor) {
+                showAlert('❌ 必須項目（タイトル、カテゴリ、講師）を入力してください。', 'error');
+                return;
+            }
+
+            const timeKey = `${sessionData.date}-${sessionData.time}`;
+            scheduleData[timeKey] = sessionData;
+
+            generateScheduleTable();
+            hideSessionModal();
+            showAlert('✅ セッションが保存されました！', 'success');
+        }
+
+        // データ保存
+        function saveData() {
+            try {
+                const data = {
+                    campData: campData,
+                    scheduleData: scheduleData,
+                    categories: categories,
+                    lastModified: new Date().toISOString()
+                };
+
+                localStorage.setItem('trainingScheduleData', JSON.stringify(data));
+                showAlert('💾 データが保存されました！', 'success');
+                console.log('💾 データ保存完了:', Object.keys(scheduleData).length + '件のセッション');
+            } catch (error) {
+                console.error('保存エラー:', error);
+                showAlert('❌ データの保存に失敗しました。', 'error');
+            }
+        }
+
+        // データ読み込み
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('trainingScheduleData');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    campData = data.campData;
+                    scheduleData = data.scheduleData || {};
+
+                    if (campData && campData.dates) {
+                        campData.dates = campData.dates.map(d => new Date(d));
+                        generateScheduleTable();
+                        console.log('📂 データ読み込み完了:', Object.keys(scheduleData).length + '件のセッション');
+                    }
+                }
+            } catch (error) {
+                console.error('読み込みエラー:', error);
+                showAlert('⚠️ データの読み込みに失敗しました。', 'warning');
+            }
+        }
+
+        // データエクスポート
+        function exportData() {
+            try {
+                const data = {
+                    campData: campData,
+                    scheduleData: scheduleData,
+                    categories: categories,
+                    instructors: instructors,
+                    exportDate: new Date().toISOString()
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `training-schedule-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showAlert('📤 データをエクスポートしました！', 'success');
+            } catch (error) {
+                console.error('エクスポートエラー:', error);
+                showAlert('❌ エクスポートに失敗しました。', 'error');
+            }
+        }
+
+        // アラート表示
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(alertDiv)) {
+                        document.body.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // ユーティリティ関数
+        function getValue(elementId) {
+            const element = document.getElementById(elementId);
+            return element ? element.value : '';
+        }
+
+        function setValue(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+                    element.value = value;
+                } else {
+                    element.textContent = value;
+                }
+            }
+        }
+
+        // アニメーション用CSS追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ページ読み込み完了時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM読み込み完了');
+            initializeApp();
+        });
+
+    </script>
+</body>
+</html>
